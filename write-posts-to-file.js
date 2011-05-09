@@ -30,6 +30,7 @@ function buildJsonOutput(){
         throw err;
       }
     });
+    logger.info('outputJson.length='+outputJson.length);
   });
 }
 
