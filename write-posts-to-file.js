@@ -25,9 +25,9 @@ function buildJsonOutput(){
         logger.info('post [added]: ' + doc.title);
       }));
     });
+    queue.push(logger.info('outputJson.length='+outputJson.length));
   });
   async.series(queue);
-  logger.info('outputJson.length='+outputJson.length);
 }
 
 function writeJsonFile(){
