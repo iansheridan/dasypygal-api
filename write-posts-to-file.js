@@ -14,27 +14,28 @@ var jsonFile = fs.createWriteStream('posts.json', {'flags': 'w'});
 // find all the Posts and iterate over them
 var outputJson = new Array();
 
-function buildJsonOutput(){
-  var queue = new Array();
-  Blog.view('/blog/_design/Post/_view/by_created_at', {}, function(err, posts) {
-    if (err) throw err;
-    posts.rows.forEach(function(item){
-      queue.push(Blog.get(item.id,function(err,doc) {
-        if (err) throw err;
-        outputJson.push(doc);
-        logger.info('post [added]: ' + doc.title);
-      }));
+async.series([
+  function buildJsonOutput(){
+    var queue = new Array();
+    Blog.view('/blog/_design/Post/_view/by_created_at', {}, function(err, posts) {
+      if (err) throw err;
+      posts.rows.forEach(function(item){
+        queue.push(Blog.get(item.id,function(err,doc) {
+          if (err) throw err;
+          outputJson.push(doc);
+          logger.info('post [added]: ' + doc.title);
+        }));
+      });
+      queue.push(logger.info('outputJson.length='+outputJson.length));
     });
-    queue.push(logger.info('outputJson.length='+outputJson.length));
-  });
-  async.series(queue);
-}
-
-function writeJsonFile(){
-  setInterval(function(){
-    jsonFile.write(JSON.stringify(outputJson));
-    logger.info('outputJson.length='+outputJson.length);
-  },1500)
-}
-
-async.series([buildJsonOutput,writeJsonFile]);
+    async.series(queue);
+    return 'one';
+  },
+  function writeJsonFile(){
+    setInterval(function(){
+      jsonFile.write(JSON.stringify(outputJson));
+      logger.info('outputJson.length='+outputJson.length);
+    },1500)
+    return 'two';
+  }
+]);
