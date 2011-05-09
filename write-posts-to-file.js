@@ -18,7 +18,7 @@ function buildJsonOutput(){
   Blog.view('/blog/_design/Post/_view/by_created_at', {}, function(err, posts) {
     if (err) throw err;
     //jsonFile.write('[');
-    async.forEachSeries(posts.rows,function(item,cb){
+    posts.rows.forEach(function(item){
       Blog.get(item.id,function(err,doc) {
         if (err) throw err;
         outputJson.push(doc);
