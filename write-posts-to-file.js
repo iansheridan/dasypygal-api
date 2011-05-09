@@ -38,4 +38,6 @@ async.series([
     },1500)
     return 'two';
   }
-]);
+],function(err, results){
+  logger.info(u.inspect(results));
+});
