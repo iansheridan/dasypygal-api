@@ -15,23 +15,19 @@ var jsonFile = fs.createWriteStream('posts.json', {'flags': 'w'});
 var outputJson = new Array();
 
 function buildJsonOutput(){
+  var queue = new Array();
   Blog.view('/blog/_design/Post/_view/by_created_at', {}, function(err, posts) {
     if (err) throw err;
-    //jsonFile.write('[');
     posts.rows.forEach(function(item){
-      Blog.get(item.id,function(err,doc) {
+      queue.push(Blog.get(item.id,function(err,doc) {
         if (err) throw err;
         outputJson.push(doc);
         logger.info('post [added]: ' + doc.title);
-      });
-    },function(err) {
-      if (err) {
-        logger.error(u.inpect(err));
-        throw err;
-      }
+      }));
     });
-    logger.info('outputJson.length='+outputJson.length);
   });
+  async.series(queue);
+  logger.info('outputJson.length='+outputJson.length);
 }
 
 function writeJsonFile(){
