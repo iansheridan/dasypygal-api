@@ -35,6 +35,7 @@ function buildJsonOutput(){
 
 function writeJsonFile(){
   jsonFile.write(JSON.stringify(outputJson));
+  logger.info('outputJson.length='+outputJson.length);
 }
 
 async.series([buildJsonOutput,writeJsonFile]);
