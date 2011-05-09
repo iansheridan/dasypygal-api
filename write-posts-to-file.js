@@ -1,6 +1,7 @@
 var CouchClient = require('couch-client')
 var fs = require('fs');
-var async= require('async');
+var asyncOne = require('async');
+var asyncTwo = require('async');
 var u = require('util');
 var logger = require('logger').create();
 logger.level = 1;
@@ -14,8 +15,8 @@ var jsonFile = fs.createWriteStream('posts.json', {'flags': 'w'});
 // find all the Posts and iterate over them
 var outputJson = new Array();
 
-async.series([
-  function(callback){
+asyncOne.series({
+  buildJsonPutput: function(callback){
     var queue = new Array();
     Blog.view('/blog/_design/Post/_view/by_created_at', {}, function(err, posts) {
       if (err) throw err;
@@ -28,16 +29,16 @@ async.series([
       });
       queue.push(logger.info('[ONE] outputJson.length='+outputJson.length));
     });
-    async.series(queue);
-    callback(null, 'one');
+    asyncTwo.series(queue);
+    callback(null, 'buildJsonPutput');
   },
-  function(callback){
+  writeJson: function(callback){
     setInterval(function(){
       jsonFile.write(JSON.stringify(outputJson));
       logger.info('[TWO] outputJson.length='+outputJson.length);
-    },1500)
-    callback(null, 'two');
+    },1000)
+    callback(null, 'writeJson');
   }
-],function(err, results){
+},function(err, results){
   logger.info(u.inspect(results));
 });
