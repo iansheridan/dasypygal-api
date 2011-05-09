@@ -15,7 +15,7 @@ var jsonFile = fs.createWriteStream('posts.json', {'flags': 'w'});
 var outputJson = new Array();
 
 async.series([
-  function buildJsonOutput(){
+  function(callback){
     var queue = new Array();
     Blog.view('/blog/_design/Post/_view/by_created_at', {}, function(err, posts) {
       if (err) throw err;
@@ -29,14 +29,14 @@ async.series([
       queue.push(logger.info('outputJson.length='+outputJson.length));
     });
     async.series(queue);
-    return 'one';
+    callback(null, 'one');
   },
-  function writeJsonFile(){
+  function(callback){
     setInterval(function(){
       jsonFile.write(JSON.stringify(outputJson));
       logger.info('outputJson.length='+outputJson.length);
     },1500)
-    return 'two';
+    callback(null, 'two');
   }
 ],function(err, results){
   logger.info(u.inspect(results));
