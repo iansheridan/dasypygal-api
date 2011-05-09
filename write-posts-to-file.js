@@ -26,7 +26,7 @@ async.series([
           logger.info('post [added]: ' + doc.title);
         }));
       });
-      queue.push(logger.info('outputJson.length='+outputJson.length));
+      queue.push(logger.info('[ONE] outputJson.length='+outputJson.length));
     });
     async.series(queue);
     callback(null, 'one');
@@ -34,7 +34,7 @@ async.series([
   function(callback){
     setInterval(function(){
       jsonFile.write(JSON.stringify(outputJson));
-      logger.info('outputJson.length='+outputJson.length);
+      logger.info('[TWO] outputJson.length='+outputJson.length);
     },1500)
     callback(null, 'two');
   }
