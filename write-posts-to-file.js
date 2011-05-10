@@ -31,14 +31,12 @@ asyncOne.series({
     });
     asyncTwo.series(queue);
     callback(null, 'buildJsonPutput');
-  },
-  writeJson: function(callback){
-    setInterval(function(){
-      jsonFile.write(JSON.stringify(outputJson));
-      logger.info('[TWO] outputJson.length='+outputJson.length);
-    },1000)
-    callback(null, 'writeJson');
   }
 },function(err, results){
   logger.info(u.inspect(results));
 });
+
+setInterval(function(){
+  jsonFile.write(JSON.stringify(outputJson));
+  logger.info('[TWO] outputJson.length='+outputJson.length);
+},2000)
