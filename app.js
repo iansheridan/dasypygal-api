@@ -56,6 +56,34 @@ app.get('/posts', function(req, res){
   });
 });
 
+app.get('/sidebar/:date', function(req, res){
+  db.view('Sidebar/by_created_at', { key: req.params.date }, function(err, post) {
+    if (err) throw err;
+    res.send(JSON.stringify(post.rows));
+  });
+});
+
+app.get('/sidebars', function(req, res){
+  db.view('Sidebar/by_created_at', function(err, posts) {
+    if (err) throw err;
+    res.send(JSON.stringify(posts.rows));
+  });
+});
+
+app.get('/user/:id', function(req, res){
+  db.view('User/by_id', { key: req.params.id }, function(err, post) {
+    if (err) throw err;
+    res.send(JSON.stringify(post.rows));
+  });
+});
+
+app.get('/users', function(req, res){
+  db.view('User/by_created_at', function(err, posts) {
+    if (err) throw err;
+    res.send(JSON.stringify(posts.rows));
+  });
+});
+
 // Only listen on $ node app.js
 
 if (!module.parent) {
