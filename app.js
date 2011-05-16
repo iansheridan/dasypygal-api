@@ -31,7 +31,7 @@ app.configure('development', function(){
 });
 
 app.configure('production', function(){
-  app.use(express.errorHandler()); 
+  app.use(express.errorHandler());
 });
 
 // Routes
@@ -42,29 +42,107 @@ app.get('/', function(req, res){
   });
 });
 
-app.get('/posts/:date', function(req, res){
-  db.view('Post/by_created_at', { key: req.params.date }, function(err, post) {
+app.get('/about', function(req, res){
+  res.render('about', {
+    title: 'DG API :: About'
+  });
+});
+
+app.get('/post/:id', function(req, res){
+  db.get(req.params.id, function (err, doc) {
+    if (err) throw err;
+    res.send(JSON.stringify(doc));
+  });
+});
+
+app.del('/post/:id', function(req, res){
+  db.remove(req.params.id, function (err, doc) {
+    if (err) throw err;
+    res.send(JSON.stringify(doc));
+  });
+});
+
+// the object that is passed to this function should contain
+//    title, string
+//    body, string
+//    user_id, string, EMAIL
+//
+// the other fields will be filled in
+app.put('/post/:id', function(req, res){
+  var newdoc = req.params.doc;
+  newdoc['couchrest-type'] = 'Post';
+  newdoc.slug = newdoc.title.replace(/ /g, "_").replace(/[^_\w]/g, "").replace(/_{2,}/g, "_").toLowerCase();
+  newdoc.updated_at = new Date();
+  db.save(newdoc, function (err, doc) {
+    if (err) throw err;
+    res.send(JSON.stringify(doc));
+  });
+});
+
+// the object that is passed to this function should contain
+//    title, string
+//    body, string
+//    user_id, string, EMAIL
+//
+// the other fields will be filled in
+app.put('/post/new', function(req, res){
+  var newdoc = req.params.doc;
+  newdoc['couchrest-type'] = 'Post';
+  newdoc.slug = newdoc.title.replace(/ /g, "_").replace(/[^_\w]/g, "").replace(/_{2,}/g, "_").toLowerCase();
+  newdoc.created_at = new Date();
+  newdoc.updated_at = new Date();
+  db.save(newdoc, function (err, doc) {
+    if (err) throw err;
+    res.send(JSON.stringify(doc));
+  });
+});
+
+app.get('/posts/date/:date', function(req, res){
+  var query = { key: req.params.date, descending: true };
+  db.view('Post/by_created_at', query, function(err, posts) {
     if (err) throw err;
     res.send(JSON.stringify(post.rows));
   });
 });
 
-app.get('/posts', function(req, res){
-  db.view('Post/by_created_at', function(err, posts) {
+app.get('/posts/page/:page', function(req, res){
+  var limit = 5,
+    skip = ((req.params.page - 1) * limit) + 1,
+    query = { limit: limit, descending: true };
+  if (skip > 1) query.skip = skip;
+  db.view('Post/by_created_at', query, function(err, posts) {
     if (err) throw err;
     res.send(JSON.stringify(posts.rows));
   });
 });
 
-app.get('/sidebar/:date', function(req, res){
-  db.view('Sidebar/by_created_at', { key: req.params.date }, function(err, post) {
+app.get('/posts/all', function(req, res){
+  var query = { descending: true };
+  db.view('Post/by_created_at', query, function(err, posts) {
+    if (err) throw err;
+    res.send(JSON.stringify(posts.rows));
+  });
+});
+
+app.get('/posts', function(req, res){
+  var limit = 5,
+    query = { limit: limit, descending: true };
+  db.view('Post/by_created_at', query, function(err, posts) {
+    if (err) throw err;
+    res.send(JSON.stringify(posts.rows));
+  });
+});
+
+app.get('/sidebar/:id', function(req, res){
+  db.view('Sidebar/by_id', { key: req.params.id }, function(err, post) {
     if (err) throw err;
     res.send(JSON.stringify(post.rows));
   });
 });
 
 app.get('/sidebars', function(req, res){
-  db.view('Sidebar/by_created_at', function(err, posts) {
+  var query = { descending: true };
+  db.view('Sidebar/by_created_at', query, function(err, posts) {
     if (err) throw err;
     res.send(JSON.stringify(posts.rows));
   });
@@ -78,7 +156,8 @@ app.get('/user/:id', function(req, res){
 });
 
 app.get('/users', function(req, res){
-  db.view('User/by_created_at', function(err, posts) {
+  var query = { descending: true };
+  db.view('User/by_created_at', query, function(err, posts) {
     if (err) throw err;
     res.send(JSON.stringify(posts.rows));
   });
