@@ -5,6 +5,7 @@ var app = module.exports = express.createServer();
 // DB interaction
 var CouchClient = require('couch-client');
 var db = CouchClient('http://dasypygal.dyndns.org:5984/blog');
+
 var async = require('async');
 
 // Logging
@@ -33,25 +34,6 @@ app.configure('production', function(){
   app.use(express.errorHandler()); 
 });
 
-// Functions
-
-function getPosts(){
-  var found_posts = new Array();
-  db.view('/blog/_design/Post/_view/by_created_at', function(err, posts) {
-    if (err) throw err;
-    async.forEachSeries(posts.rows,function(item,callback){
-      db.get(item.id,function(err,doc) {
-        if (err) return callback(err);
-        found_posts.push(doc);
-        callback(null);
-      });
-    },function(err){
-      if (err) throw err;
-      return JSON.stringify(found_posts);
-    });
-  });
-}
-
 // Routes
 
 app.get('/', function(req, res){
@@ -60,8 +42,18 @@ app.get('/', function(req, res){
   });
 });
 
+app.get('/posts/:date', function(req, res){
+  db.view('Post/by_created_at', { key: req.params.date }, function(err, post) {
+    if (err) throw err;
+    res.send(JSON.stringify(post.rows));
+  });
+});
+
 app.get('/posts', function(req, res){
-  res.send(getPosts());
+  db.view('Post/by_created_at', function(err, posts) {
+    if (err) throw err;
+    res.send(JSON.stringify(posts.rows));
+  });
 });
 
 // Only listen on $ node app.js
